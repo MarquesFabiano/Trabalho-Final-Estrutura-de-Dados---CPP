@@ -14,25 +14,24 @@ struct Participante
 };
 
 std::vector<Participante> participantes;
+int proximoID = 1;  
 
-void limparEntrada()
+void LimparBuffer()
 {
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // ver se esta certinho 
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 void inserirParticipante() 
 {
     Participante p;
-    std::cout << "ID: ";
-    std::cin >> p.id;
-    limparEntrada(); 
+    p.id = proximoID++; 
     std::cout << "Nome: ";
-    std::getline(std::cin, p.nome);  
+    std::getline(std::cin, p.nome); 
     std::cout << "Semestre: ";
     std::cin >> p.semestre;
     std::cout << "Ano de Ingresso: ";
     std::cin >> p.anoIngresso;
-    limparEntrada();
+    LimparBuffer();
     std::cout << "Curso (DSM/SI/GE): ";
     std::getline(std::cin, p.curso); 
 
@@ -45,7 +44,7 @@ void editarParticipante()
     std::cout << "Editar Participante: \n";
     std::cout << "Insira o id: ";
     std::cin >> id;
-    limparEntrada();
+    LimparBuffer();
 
     for (auto &p : participantes) 
     {
@@ -57,7 +56,7 @@ void editarParticipante()
             std::cin >> p.semestre;
             std::cout << "Ano de Ingresso: ";
             std::cin >> p.anoIngresso;
-            limparEntrada();
+            LimparBuffer();
             std::cout << "Curso (DSM/SI/GE): ";
             std::getline(std::cin, p.curso);
             return;
@@ -80,13 +79,18 @@ void carregarParticipantes()
     Participante p;
     while (arquivo >> p.id)
     {
-        arquivo.ignore(); 
+        arquivo.ignore();  
         std::getline(arquivo, p.nome, '\t'); 
         arquivo >> p.semestre >> p.anoIngresso;
-        arquivo.ignore(); 
+        arquivo.ignore();  
         std::getline(arquivo, p.curso);  
 
         participantes.push_back(p);
+
+        if (p.id >= proximoID) //agora vai começar do ultimop id do arquivo
+        {
+            proximoID = p.id + 1;
+        }
     }
 
     arquivo.close();
@@ -122,6 +126,7 @@ void menu()
         std::cout << "0. Encerrar o programa\n";
         std::cout << "Opção: ";
         std::cin >> opcao;
+        LimparBuffer();
 
         switch (opcao)
         {
@@ -148,6 +153,7 @@ void menu()
 
 int main()
 {
+    carregarParticipantes();  //E se nao tiver o txt?
     menu();
     return 0;
 }
