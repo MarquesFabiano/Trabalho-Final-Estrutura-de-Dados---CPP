@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include <fstream>
 #include <string>
 #include <limits>
@@ -13,29 +12,70 @@ struct Participante
     std::string curso;
 };
 
-std::vector<Participante> participantes;
-int proximoID = 1;  
+Participante* participantes = nullptr;
+int totalParticipantes = 0;
+int proximoID = 1;
 
 void LimparBuffer()
 {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
+void redimensionarParticipantes(int novoTamanho)
+{
+    Participante* novoArray = new Participante[novoTamanho];
+    for (int i = 0; i < totalParticipantes; ++i)
+    {
+        novoArray[i] = participantes[i];
+    }
+    delete[] participantes;
+    participantes = novoArray;
+}
+
 void inserirParticipante() 
 {
-    Participante p;
-    p.id = proximoID++; 
+    if (totalParticipantes % 10 == 0)
+    {
+        redimensionarParticipantes(totalParticipantes + 10);
+    }
+
+    Participante& p = participantes[totalParticipantes];
+    p.id = proximoID++;
     std::cout << "Nome: ";
-    std::getline(std::cin, p.nome); 
+    std::getline(std::cin, p.nome);
     std::cout << "Semestre: ";
     std::cin >> p.semestre;
     std::cout << "Ano de Ingresso: ";
     std::cin >> p.anoIngresso;
     LimparBuffer();
-    std::cout << "Curso (DSM/SI/GE): ";
-    std::getline(std::cin, p.curso); 
 
-    participantes.push_back(p);
+    int opcaoCurso;
+    do {
+        std::cout << "Curso (escolha uma opção): \n";
+        std::cout << "1. GE\n";
+        std::cout << "2. SI\n";
+        std::cout << "3. DSM\n";
+        std::cout << "Opção: ";
+        std::cin >> opcaoCurso;
+        LimparBuffer();
+
+        switch (opcaoCurso)
+        {
+            case 1:
+                p.curso = "GE";
+                break;
+            case 2:
+                p.curso = "SI";
+                break;
+            case 3:
+                p.curso = "DSM";
+                break;
+            default:
+                std::cout << "Opção inválida! Tente novamente.\n";
+        }
+    } while (opcaoCurso < 1 || opcaoCurso > 3);
+
+    ++totalParticipantes;
 }
 
 void editarParticipante() 
@@ -46,19 +86,44 @@ void editarParticipante()
     std::cin >> id;
     LimparBuffer();
 
-    for (auto &p : participantes) 
+    for (int i = 0; i < totalParticipantes; ++i) 
     {
-        if (p.id == id) 
+        if (participantes[i].id == id) 
         {
             std::cout << "Nome: ";
-            std::getline(std::cin, p.nome);
+            std::getline(std::cin, participantes[i].nome);
             std::cout << "Semestre: ";
-            std::cin >> p.semestre;
+            std::cin >> participantes[i].semestre;
             std::cout << "Ano de Ingresso: ";
-            std::cin >> p.anoIngresso;
+            std::cin >> participantes[i].anoIngresso;
             LimparBuffer();
-            std::cout << "Curso (DSM/SI/GE): ";
-            std::getline(std::cin, p.curso);
+
+            int opcaoCurso;
+            do {
+                std::cout << "Curso (escolha uma opção): \n";
+                std::cout << "1. GE\n";
+                std::cout << "2. SI\n";
+                std::cout << "3. DSM\n";
+                std::cout << "Opção: ";
+                std::cin >> opcaoCurso;
+                LimparBuffer();
+
+                switch (opcaoCurso)
+                {
+                    case 1:
+                        participantes[i].curso = "GE";
+                        break;
+                    case 2:
+                        participantes[i].curso = "SI";
+                        break;
+                    case 3:
+                        participantes[i].curso = "DSM";
+                        break;
+                    default:
+                        std::cout << "Opção inválida! Tente novamente.\n";
+                }
+            } while (opcaoCurso < 1 || opcaoCurso > 3);
+
             return;
         }
     }
@@ -75,20 +140,24 @@ void carregarParticipantes()
         return;
     }
 
-    participantes.clear();
+    totalParticipantes = 0;
     Participante p;
     while (arquivo >> p.id)
     {
-        arquivo.ignore();  
-        std::getline(arquivo, p.nome, '\t'); 
+        arquivo.ignore();
+        std::getline(arquivo, p.nome, '\t');
         arquivo >> p.semestre >> p.anoIngresso;
-        arquivo.ignore();  
-        std::getline(arquivo, p.curso);  
+        arquivo.ignore();
+        std::getline(arquivo, p.curso);
 
-        participantes.push_back(p);
-
-        if (p.id >= proximoID) //agora vai começar do ultimop id do arquivo
+        if (totalParticipantes % 10 == 0)
         {
+            redimensionarParticipantes(totalParticipantes + 10);
+        }
+
+        participantes[totalParticipantes++] = p;
+
+        if (p.id >= proximoID) {
             proximoID = p.id + 1;
         }
     }
@@ -105,9 +174,9 @@ void gravarParticipantes()
         return;
     }
 
-    for (const auto &p : participantes)
+    for (int i = 0; i < totalParticipantes; ++i)
     {
-        arquivo << p.id << "\t" << p.nome << "\t" << p.semestre << "\t" << p.anoIngresso << "\t" << p.curso << "\n";
+        arquivo << participantes[i].id << "\t" << participantes[i].nome << "\t" << participantes[i].semestre << "\t" << participantes[i].anoIngresso << "\t" << participantes[i].curso << "\n";
     }
 
     arquivo.close();
@@ -153,7 +222,8 @@ void menu()
 
 int main()
 {
-    carregarParticipantes();  //E se nao tiver o txt?
+    carregarParticipantes();
     menu();
+    delete[] participantes;
     return 0;
 }
