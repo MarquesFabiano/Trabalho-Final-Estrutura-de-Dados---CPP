@@ -3,7 +3,7 @@
 #include <string>
 #include <limits>
 
-struct Participante 
+struct Aluno 
 {
     int id;
     std::string nome;
@@ -12,41 +12,51 @@ struct Participante
     std::string curso;
 };
 
-Participante* participantes = nullptr;
-int totalParticipantes = 0;
+struct Contribuicao 
+{
+    int idAluno;
+    int mes;
+    int ano;
+    float valor;
+    Contribuicao* proximo;
+};
+
+Aluno* alunos = nullptr;
+int totalAlunos = 0;
 int proximoID = 1;
+Contribuicao* contribuicoes = nullptr;
 
 void LimparBuffer()
 {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-void redimensionarParticipantes(int novoTamanho)
+void redimensionarAlunos(int novoTamanho)
 {
-    Participante* novoArray = new Participante[novoTamanho];
-    for (int i = 0; i < totalParticipantes; ++i)
+    Aluno* novoArray = new Aluno[novoTamanho];
+    for (int i = 0; i < totalAlunos; ++i)
     {
-        novoArray[i] = participantes[i];
+        novoArray[i] = alunos[i];
     }
-    delete[] participantes;
-    participantes = novoArray;
+    delete[] alunos;
+    alunos = novoArray;
 }
 
-void inserirParticipante() 
+void inserirAluno() 
 {
-    if (totalParticipantes % 10 == 0)
+    if (totalAlunos % 10 == 0)
     {
-        redimensionarParticipantes(totalParticipantes + 10);
+        redimensionarAlunos(totalAlunos + 10);
     }
 
-    Participante& p = participantes[totalParticipantes];
-    p.id = proximoID++;
+    Aluno& a = alunos[totalAlunos];
+    a.id = proximoID++;
     std::cout << "Nome: ";
-    std::getline(std::cin, p.nome);
+    std::getline(std::cin, a.nome);
     std::cout << "Semestre: ";
-    std::cin >> p.semestre;
+    std::cin >> a.semestre;
     std::cout << "Ano de Ingresso: ";
-    std::cin >> p.anoIngresso;
+    std::cin >> a.anoIngresso;
     LimparBuffer();
 
     int opcaoCurso;
@@ -62,40 +72,40 @@ void inserirParticipante()
         switch (opcaoCurso)
         {
             case 1:
-                p.curso = "GE";
+                a.curso = "GE";
                 break;
             case 2:
-                p.curso = "SI";
+                a.curso = "SI";
                 break;
             case 3:
-                p.curso = "DSM";
+                a.curso = "DSM";
                 break;
             default:
                 std::cout << "Opção inválida! Tente novamente.\n";
         }
     } while (opcaoCurso < 1 || opcaoCurso > 3);
 
-    ++totalParticipantes;
+    ++totalAlunos;
 }
 
-void editarParticipante() 
+void editarAluno() 
 {
     int id;
-    std::cout << "Editar Participante: \n";
+    std::cout << "Editar Aluno: \n";
     std::cout << "Insira o id: ";
     std::cin >> id;
     LimparBuffer();
 
-    for (int i = 0; i < totalParticipantes; ++i) 
+    for (int i = 0; i < totalAlunos; ++i) 
     {
-        if (participantes[i].id == id) 
+        if (alunos[i].id == id) 
         {
             std::cout << "Nome: ";
-            std::getline(std::cin, participantes[i].nome);
+            std::getline(std::cin, alunos[i].nome);
             std::cout << "Semestre: ";
-            std::cin >> participantes[i].semestre;
+            std::cin >> alunos[i].semestre;
             std::cout << "Ano de Ingresso: ";
-            std::cin >> participantes[i].anoIngresso;
+            std::cin >> alunos[i].anoIngresso;
             LimparBuffer();
 
             int opcaoCurso;
@@ -111,13 +121,13 @@ void editarParticipante()
                 switch (opcaoCurso)
                 {
                     case 1:
-                        participantes[i].curso = "GE";
+                        alunos[i].curso = "GE";
                         break;
                     case 2:
-                        participantes[i].curso = "SI";
+                        alunos[i].curso = "SI";
                         break;
                     case 3:
-                        participantes[i].curso = "DSM";
+                        alunos[i].curso = "DSM";
                         break;
                     default:
                         std::cout << "Opção inválida! Tente novamente.\n";
@@ -131,55 +141,162 @@ void editarParticipante()
     std::cout << "Não foi possível encontrar este id.\n";
 }
 
-void carregarParticipantes()
+void carregarAlunos()
 {
-    std::ifstream arquivo("participantes.txt");
+    std::ifstream arquivo("alunos.txt");
     if (!arquivo.is_open()) 
     {
         std::cout << "Não foi possível abrir o arquivo.\n";
         return;
     }
 
-    totalParticipantes = 0;
-    Participante p;
-    while (arquivo >> p.id)
+    totalAlunos = 0;
+    Aluno a;
+    while (arquivo >> a.id)
     {
         arquivo.ignore();
-        std::getline(arquivo, p.nome, '\t');
-        arquivo >> p.semestre >> p.anoIngresso;
+        std::getline(arquivo, a.nome, '\t');
+        arquivo >> a.semestre >> a.anoIngresso;
         arquivo.ignore();
-        std::getline(arquivo, p.curso);
+        std::getline(arquivo, a.curso);
 
-        if (totalParticipantes % 10 == 0)
+        if (totalAlunos % 10 == 0)
         {
-            redimensionarParticipantes(totalParticipantes + 10);
+            redimensionarAlunos(totalAlunos + 10);
         }
 
-        participantes[totalParticipantes++] = p;
+        alunos[totalAlunos++] = a;
 
-        if (p.id >= proximoID) {
-            proximoID = p.id + 1;
+        if (a.id >= proximoID) {
+            proximoID = a.id + 1;
         }
     }
 
     arquivo.close();
 }
 
-void gravarParticipantes()
+void gravarAlunos()
 {
-    std::ofstream arquivo("participantes.txt");
+    std::ofstream arquivo("alunos.txt");
     if (!arquivo.is_open())
     {
         std::cout << "Não foi possível abrir o arquivo.\n";
         return;
     }
 
-    for (int i = 0; i < totalParticipantes; ++i)
+    for (int i = 0; i < totalAlunos; ++i)
     {
-        arquivo << participantes[i].id << "\t" << participantes[i].nome << "\t" << participantes[i].semestre << "\t" << participantes[i].anoIngresso << "\t" << participantes[i].curso << "\n";
+        arquivo << alunos[i].id << "\t" << alunos[i].nome << "\t" << alunos[i].semestre << "\t" << alunos[i].anoIngresso << "\t" << alunos[i].curso << "\n";
     }
 
     arquivo.close();
+}
+
+bool verificarIdAluno(int id) 
+{
+    for (int i = 0; i < totalAlunos; ++i) 
+    {
+        if (alunos[i].id == id) 
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void cadastrarContribuicao() 
+{
+    int id;
+    std::cout << "Insira o ID do aluno: ";
+    std::cin >> id;
+    LimparBuffer();
+
+    if (!verificarIdAluno(id)) 
+    {
+        std::cout << "ID do aluno não encontrado.\n";
+        return;
+    }
+
+    Contribuicao* novaContribuicao = new Contribuicao;
+    novaContribuicao->idAluno = id;
+
+    std::cout << "Mês (1-12): ";
+    std::cin >> novaContribuicao->mes;
+    std::cout << "Ano (>= 2024): ";
+    std::cin >> novaContribuicao->ano;
+    std::cout << "Valor da contribuição: ";
+    std::cin >> novaContribuicao->valor;
+    LimparBuffer();
+
+    novaContribuicao->proximo = contribuicoes;
+    contribuicoes = novaContribuicao;
+
+    std::cout << "Contribuição cadastrada com sucesso.\n";
+}
+
+void gravarContribuicoes() 
+{
+    std::ofstream arquivo("contribuintes.txt");
+    if (!arquivo.is_open())
+    {
+        std::cout << "Não foi possível abrir o arquivo.\n";
+        return;
+    }
+
+    Contribuicao* atual = contribuicoes;
+    while (atual != nullptr) 
+    {
+        arquivo << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
+        atual = atual->proximo;
+    }
+
+    arquivo.close();
+}
+
+void gravarContribuicoesPorCurso()
+{
+    std::ofstream arquivoDSM("contribuintes_DSM.txt");
+    std::ofstream arquivoSI("contribuintes_SI.txt");
+    std::ofstream arquivoGE("contribuintes_GE.txt");
+
+    if (!arquivoDSM.is_open() || !arquivoSI.is_open() || !arquivoGE.is_open())
+    {
+        std::cout << "Não foi possível abrir um dos arquivos.\n";
+        return;
+    }
+
+    Contribuicao* atual = contribuicoes;
+    while (atual != nullptr) 
+    {
+        std::string curso;
+        for (int i = 0; i < totalAlunos; ++i) 
+        {
+            if (alunos[i].id == atual->idAluno) 
+            {
+                curso = alunos[i].curso;
+                break;
+            }
+        }
+
+        if (curso == "DSM")
+        {
+            arquivoDSM << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
+        }
+        else if (curso == "SI")
+        {
+            arquivoSI << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
+        }
+        else if (curso == "GE")
+        {
+            arquivoGE << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
+        }
+
+        atual = atual->proximo;
+    }
+
+    arquivoDSM.close();
+    arquivoSI.close();
+    arquivoGE.close();
 }
 
 void menu()
@@ -188,10 +305,13 @@ void menu()
     do
     {
         std::cout << "Turma do Café! escolha sua opcao:\n";
-        std::cout << "1. Inserir participante\n";
-        std::cout << "2. Editar participante\n";
-        std::cout << "3. Carregar participantes de arquivo\n";
-        std::cout << "4. Gravar participantes em arquivo\n";
+        std::cout << "1. Inserir aluno\n";
+        std::cout << "2. Editar aluno\n";
+        std::cout << "3. Carregar alunos de arquivo\n";
+        std::cout << "4. Gravar alunos em arquivo\n";
+        std::cout << "5. Cadastrar contribuição\n";
+        std::cout << "6. Gravar contribuições em arquivo\n";
+        std::cout << "7. Gravar contribuições por curso\n";
         std::cout << "0. Encerrar o programa\n";
         std::cout << "Opção: ";
         std::cin >> opcao;
@@ -200,16 +320,25 @@ void menu()
         switch (opcao)
         {
             case 1:
-                inserirParticipante();
+                inserirAluno();
                 break;
             case 2:
-                editarParticipante();
+                editarAluno();
                 break;
             case 3:
-                carregarParticipantes();
+                carregarAlunos();
                 break;
             case 4:
-                gravarParticipantes();
+                gravarAlunos();
+                break;
+            case 5:
+                cadastrarContribuicao();
+                break;
+            case 6:
+                gravarContribuicoes();
+                break;
+            case 7:
+                gravarContribuicoesPorCurso();
                 break;
             case 0:
                 std::cout << "Adeus! :)\n";
@@ -222,8 +351,16 @@ void menu()
 
 int main()
 {
-    carregarParticipantes();
     menu();
-    delete[] participantes;
+    delete[] alunos;
+
+    Contribuicao* atual = contribuicoes;
+    while (atual != nullptr) 
+    {
+        Contribuicao* temp = atual;
+        atual = atual->proximo;
+        delete temp;
+    }
+
     return 0;
 }
