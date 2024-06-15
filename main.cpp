@@ -9,7 +9,11 @@ struct Aluno {
     int semestre;
     int anoIngresso;
     std::string curso;
-    Aluno* proximo;
+};
+
+struct AlunoNode {
+    Aluno data;
+    AlunoNode* next;
 };
 
 struct Contribuicao {
@@ -17,54 +21,58 @@ struct Contribuicao {
     int mes;
     int ano;
     float valor;
-    Contribuicao* proximo;
 };
 
-Aluno* alunos = NULL;
+struct ContribuicaoNode {
+    Contribuicao data;
+    ContribuicaoNode* next;
+};
+
+AlunoNode* alunos = NULL;
+ContribuicaoNode* contribuicoes = NULL;
 int proximoID = 1;
-Contribuicao* contribuicoes = NULL;
 
 void LimparBuffer() {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 void inserirAluno() {
-    Aluno* novoAluno = new Aluno;
-    novoAluno->id = proximoID++;
+    AlunoNode* novoAluno = new AlunoNode;
+    novoAluno->data.id = proximoID++;
     std::cout << "Nome: ";
-    std::getline(std::cin, novoAluno->nome);
+    std::getline(std::cin, novoAluno->data.nome);
     std::cout << "Semestre: ";
-    std::cin >> novoAluno->semestre;
+    std::cin >> novoAluno->data.semestre;
     std::cout << "Ano de Ingresso: ";
-    std::cin >> novoAluno->anoIngresso;
+    std::cin >> novoAluno->data.anoIngresso;
     LimparBuffer();
 
     int opcaoCurso;
     do {
-        std::cout << "Curso (escolha uma opÃ§Ã£o): \n";
+        std::cout << "Curso (escolha uma opção): \n";
         std::cout << "1. GE\n";
         std::cout << "2. SI\n";
         std::cout << "3. DSM\n";
-        std::cout << "OpÃ§Ã£o: ";
+        std::cout << "Opção: ";
         std::cin >> opcaoCurso;
         LimparBuffer();
 
         switch (opcaoCurso) {
             case 1:
-                novoAluno->curso = "GE";
+                novoAluno->data.curso = "GE";
                 break;
             case 2:
-                novoAluno->curso = "SI";
+                novoAluno->data.curso = "SI";
                 break;
             case 3:
-                novoAluno->curso = "DSM";
+                novoAluno->data.curso = "DSM";
                 break;
             default:
-                std::cout << "OpÃ§Ã£o invÃ¡lida! Tente novamente.\n";
+                std::cout << "Opção inválida! Tente novamente.\n";
         }
     } while (opcaoCurso < 1 || opcaoCurso > 3);
 
-    novoAluno->proximo = alunos;
+    novoAluno->next = alunos;
     alunos = novoAluno;
 }
 
@@ -75,44 +83,44 @@ void editarAluno() {
     std::cin >> id;
     LimparBuffer();
 
-    Aluno* atual = alunos;
+    AlunoNode* atual = alunos;
     while (atual != NULL) {
-        if (atual->id == id) {
+        if (atual->data.id == id) {
             std::cout << "Novo Nome: ";
-            std::getline(std::cin, atual->nome);
+            std::getline(std::cin, atual->data.nome);
             std::cout << "Novo Semestre: ";
-            std::cin >> atual->semestre;
+            std::cin >> atual->data.semestre;
             std::cout << "Novo Ano de Ingresso: ";
-            std::cin >> atual->anoIngresso;
+            std::cin >> atual->data.anoIngresso;
             LimparBuffer();
 
             int opcaoCurso;
             do {
-                std::cout << "Novo Curso (escolha uma opÃ§Ã£o): \n";
+                std::cout << "Novo Curso (escolha uma opção): \n";
                 std::cout << "1. GE\n";
                 std::cout << "2. SI\n";
                 std::cout << "3. DSM\n";
-                std::cout << "OpÃ§Ã£o: ";
+                std::cout << "Opção: ";
                 std::cin >> opcaoCurso;
                 LimparBuffer();
 
                 switch (opcaoCurso) {
                     case 1:
-                        atual->curso = "GE";
+                        atual->data.curso = "GE";
                         break;
                     case 2:
-                        atual->curso = "SI";
+                        atual->data.curso = "SI";
                         break;
                     case 3:
-                        atual->curso = "DSM";
+                        atual->data.curso = "DSM";
                         break;
                     default:
-                        std::cout << "OpÃ§Ã£o invÃ¡lida! Tente novamente.\n";
+                        std::cout << "Opção inválida! Tente novamente.\n";
                 }
             } while (opcaoCurso < 1 || opcaoCurso > 3);
             break;
         }
-        atual = atual->proximo;
+        atual = atual->next;
     }
 }
 
@@ -120,21 +128,20 @@ void carregarAlunos() {
     std::ifstream arquivo("alunos.txt");
     if (arquivo.is_open()) {
         while (!arquivo.eof()) {
-            Aluno* novoAluno = new Aluno;
-            arquivo >> novoAluno->id;
+            AlunoNode* novoAluno = new AlunoNode;
+            arquivo >> novoAluno->data.id;
             arquivo.ignore();
-            std::getline(arquivo, novoAluno->nome);
-            arquivo >> novoAluno->semestre >> novoAluno->anoIngresso;
+            std::getline(arquivo, novoAluno->data.nome);
+            arquivo >> novoAluno->data.semestre >> novoAluno->data.anoIngresso;
             arquivo.ignore();
-            std::getline(arquivo, novoAluno->curso);
+            std::getline(arquivo, novoAluno->data.curso);
 
-           
-            if (novoAluno->id >= proximoID) { //novo id agora Ã© auto
-                proximoID = novoAluno->id + 1;
-            }
-
-            novoAluno->proximo = alunos;
+            novoAluno->next = alunos;
             alunos = novoAluno;
+
+            if (novoAluno->data.id >= proximoID) {
+                proximoID = novoAluno->data.id + 1;
+            }
 
             if (arquivo.peek() == EOF) break;
         }
@@ -147,40 +154,44 @@ void carregarAlunos() {
 void gravarAlunos() {
     std::ofstream arquivo("alunos.txt");
     if (arquivo.is_open()) {
-        Aluno* atual = alunos;
+        AlunoNode* atual = alunos;
         while (atual != NULL) {
-            arquivo << atual->id << "\n" << atual->nome << "\n" << atual->semestre << "\n" << atual->anoIngresso << "\n" << atual->curso << "\n";
-            atual = atual->proximo;
+            arquivo << atual->data.id << "\n" << atual->data.nome << "\n" << atual->data.semestre << "\n" << atual->data.anoIngresso << "\n" << atual->data.curso << "\n";
+            atual = atual->next;
         }
         arquivo.close();
     } else {
-        std::cerr << "Erro ao abrir arquivo para gravaÃ§Ã£o.\n";
+        std::cerr << "Erro ao abrir arquivo para gravação.\n";
     }
 }
 
-
 void cadastrarContribuicao() {
-    Contribuicao* novaContribuicao = new Contribuicao;
+    ContribuicaoNode* novaContribuicao = new ContribuicaoNode;
     std::cout << "ID do Aluno: ";
-    std::cin >> novaContribuicao->idAluno;
-    std::cout << "MÃªs: ";
-    std::cin >> novaContribuicao->mes;
+    std::cin >> novaContribuicao->data.idAluno;
+    std::cout << "Mês: ";
+    std::cin >> novaContribuicao->data.mes;
     std::cout << "Ano: ";
-    std::cin >> novaContribuicao->ano;
+    std::cin >> novaContribuicao->data.ano;
     std::cout << "Valor: ";
-    std::cin >> novaContribuicao->valor;
+    std::cin >> novaContribuicao->data.valor;
     LimparBuffer();
 
-    novaContribuicao->proximo = contribuicoes;
+    novaContribuicao->next = contribuicoes;
     contribuicoes = novaContribuicao;
 }
 
 void gravarContribuicoes() {
     std::ofstream arquivo("contribuicoes.txt");
-    Contribuicao* atual = contribuicoes;
-    while (atual != NULL) {
-        arquivo << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
-        atual = atual->proximo;
+    if (arquivo.is_open()) {
+        ContribuicaoNode* atual = contribuicoes;
+        while (atual != NULL) {
+            arquivo << atual->data.idAluno << "\t" << atual->data.mes << "\t" << atual->data.ano << "\t" << atual->data.valor << "\n";
+            atual = atual->next;
+        }
+        arquivo.close();
+    } else {
+        std::cerr << "Erro ao abrir arquivo para gravação de contribuições.\n";
     }
 }
 
@@ -189,23 +200,23 @@ void gravarContribuicoesPorCurso() {
     std::ofstream arquivoSI("contribuicoes_SI.txt");
     std::ofstream arquivoGE("contribuicoes_GE.txt");
 
-    Contribuicao* atual = contribuicoes;
+    ContribuicaoNode* atual = contribuicoes;
     while (atual != NULL) {
-        Aluno* aluno = alunos;
-        while (aluno != NULL) {
-            if (aluno->id == atual->idAluno) {
-                if (aluno->curso == "DSM") {
-                    arquivoDSM << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
-                } else if (aluno->curso == "SI") {
-                    arquivoSI << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
-                } else if (aluno->curso == "GE") {
-                    arquivoGE << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
+        AlunoNode* alunoAtual = alunos;
+        while (alunoAtual != NULL) {
+            if (alunoAtual->data.id == atual->data.idAluno) {
+                if (alunoAtual->data.curso == "DSM") {
+                    arquivoDSM << atual->data.idAluno << "\t" << atual->data.mes << "\t" << atual->data.ano << "\t" << atual->data.valor << "\n";
+                } else if (alunoAtual->data.curso == "SI") {
+                    arquivoSI << atual->data.idAluno << "\t" << atual->data.mes << "\t" << atual->data.ano << "\t" << atual->data.valor << "\n";
+                } else if (alunoAtual->data.curso == "GE") {
+                    arquivoGE << atual->data.idAluno << "\t" << atual->data.mes << "\t" << atual->data.ano << "\t" << atual->data.valor << "\n";
                 }
                 break;
             }
-            aluno = aluno->proximo;
+            alunoAtual = alunoAtual->next;
         }
-        atual = atual->proximo;
+        atual = atual->next;
     }
 
     arquivoDSM.close();
@@ -214,17 +225,17 @@ void gravarContribuicoesPorCurso() {
 }
 
 void limparMemoria() {
-    Aluno* atualAluno = alunos;
+    AlunoNode* atualAluno = alunos;
     while (atualAluno != NULL) {
-        Aluno* tempAluno = atualAluno;
-        atualAluno = atualAluno->proximo;
+        AlunoNode* tempAluno = atualAluno;
+        atualAluno = atualAluno->next;
         delete tempAluno;
     }
 
-    Contribuicao* atualContribuicao = contribuicoes;
+    ContribuicaoNode* atualContribuicao = contribuicoes;
     while (atualContribuicao != NULL) {
-        Contribuicao* tempContribuicao = atualContribuicao;
-        atualContribuicao = atualContribuicao->proximo;
+        ContribuicaoNode* tempContribuicao = atualContribuicao;
+        atualContribuicao = atualContribuicao->next;
         delete tempContribuicao;
     }
 }
