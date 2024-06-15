@@ -20,9 +20,9 @@ struct Contribuicao {
     Contribuicao* proximo;
 };
 
-Aluno* alunos = nullptr;
+Aluno* alunos = NULL;
 int proximoID = 1;
-Contribuicao* contribuicoes = nullptr;
+Contribuicao* contribuicoes = NULL;
 
 void LimparBuffer() {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -76,7 +76,7 @@ void editarAluno() {
     LimparBuffer();
 
     Aluno* atual = alunos;
-    while (atual != nullptr) {
+    while (atual != NULL) {
         if (atual->id == id) {
             std::cout << "Novo Nome: ";
             std::getline(std::cin, atual->nome);
@@ -148,7 +148,7 @@ void gravarAlunos() {
     std::ofstream arquivo("alunos.txt");
     if (arquivo.is_open()) {
         Aluno* atual = alunos;
-        while (atual != nullptr) {
+        while (atual != NULL) {
             arquivo << atual->id << "\n" << atual->nome << "\n" << atual->semestre << "\n" << atual->anoIngresso << "\n" << atual->curso << "\n";
             atual = atual->proximo;
         }
@@ -178,7 +178,7 @@ void cadastrarContribuicao() {
 void gravarContribuicoes() {
     std::ofstream arquivo("contribuicoes.txt");
     Contribuicao* atual = contribuicoes;
-    while (atual != nullptr) {
+    while (atual != NULL) {
         arquivo << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
         atual = atual->proximo;
     }
@@ -190,9 +190,9 @@ void gravarContribuicoesPorCurso() {
     std::ofstream arquivoGE("contribuicoes_GE.txt");
 
     Contribuicao* atual = contribuicoes;
-    while (atual != nullptr) {
+    while (atual != NULL) {
         Aluno* aluno = alunos;
-        while (aluno != nullptr) {
+        while (aluno != NULL) {
             if (aluno->id == atual->idAluno) {
                 if (aluno->curso == "DSM") {
                     arquivoDSM << atual->idAluno << "\t" << atual->mes << "\t" << atual->ano << "\t" << atual->valor << "\n";
@@ -215,14 +215,14 @@ void gravarContribuicoesPorCurso() {
 
 void limparMemoria() {
     Aluno* atualAluno = alunos;
-    while (atualAluno != nullptr) {
+    while (atualAluno != NULL) {
         Aluno* tempAluno = atualAluno;
         atualAluno = atualAluno->proximo;
         delete tempAluno;
     }
 
     Contribuicao* atualContribuicao = contribuicoes;
-    while (atualContribuicao != nullptr) {
+    while (atualContribuicao != NULL) {
         Contribuicao* tempContribuicao = atualContribuicao;
         atualContribuicao = atualContribuicao->proximo;
         delete tempContribuicao;
@@ -289,4 +289,3 @@ int main() {
     limparMemoria();
     return 0;
 }
-
